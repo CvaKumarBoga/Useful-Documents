@@ -1,0 +1,171 @@
+Softwares to be installed :-
+JDK 1.7  (32 bit/64 bit):
+http://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html
+Tomcat 7.0 (32 bit/64 bit) :
+http://www-eu.apache.org/dist/tomcat/tomcat-7/v7.0.90/bin/apache-tomcat-7.0.90.exe
+Oracle10G XE:
+http://www.mediafire.com/file/roc48z1i6iitpu4/OracleXE.exe/file
+Eclipse  Luna/Juno/Kepler(32 bit/64 bit)
+http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/lunar
+Project Required Jars :
+http://www.mediafire.com/file/m66lmzkelhjus47/newLibs.rar/file
+---------------------------------------
+#1 Open Eclipse and do JDK setup:
+> Window > preferences > type "installed"
+> choose Installed JRE > click on Add..
+> choose Standard VM > next > click on
+Directory > select JDK 1.7 location
+(ex: c:/Program file/Java/JDK 1.7) > finish
+> check JDK1.7 option > apply and close.
+
+#2 Server setup: Download and install 
+   Tomcat 7.0 (on port number 2018)
+> click on server tab > right click 
+> new > server > choose Tomcat 7 > next
+> browse for location > next > finish
+
+#3 Create Dyanmic Web Project:
+> file > new > Dynamic web Project
+> Enter Details:
+   Project Name  : VendorApp
+   Target Runtime : Apache Tomcat 7
+   Dynamic web module version : 2.5
+> next > next > choose check box 
+[V]generate Deployment Description Web.xml
+> finish
+
+#4 create one folder "views" under WEB-INF
+> right click on WEB-INF folder > new 
+> folder > enter name : views > finish
+
+#5 open web.xml file (in source mode)
+ (copy below code into web.xml file)
+  
+   <servlet>
+ 	<servlet-name>sample</servlet-name>
+ 	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+ 	<servlet-name>sample</servlet-name>
+ 	<url-pattern>/mvc/*</url-pattern>
+ </servlet-mapping>
+
+
+#6 Create Spring Configuration XML file
+ > right click on WEB-INF folder > new
+ > other > search with "XML File" 
+ > choose XML file option > next 
+ > Enter name "sample-servlet.xml" > finish
+ > open XMl file > copy below content
+---sample-servlet.xml--------------
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/task 
+	http://www.springframework.org/schema/task/spring-task.xsd
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	">
+	
+	<!-- 1. Activation of Annotations -->
+	<context:component-scan base-package="com.app"/>
+	<!-- 2. View Resolver -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- 3. DMDS, ASFB, HT -->
+	
+	<!-- Data Source Object -->
+	<bean 
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource" 
+		name="dsObj"
+		p:driverClassName="oracle.jdbc.driver.OracleDriver"
+		p:url="jdbc:oracle:thin:@localhost:1521:xe"
+		p:username="system"
+		p:password="manager"
+		/>
+		
+	<!-- SessionFactory object -->
+	<bean class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean" name="sfObj">
+		<property name="dataSource" ref="dsObj"/>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.OracleDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list></list>
+		</property>
+	</bean>
+	
+	<!-- Hibernate Template object --> 
+	<bean 
+		class="org.springframework.orm.hibernate3.HibernateTemplate" 
+		name="htObj"
+		p:sessionFactory-ref="sfObj"
+	/>
+	
+	
+</beans>	
+-------------------------------------
+
+#7 Create below controller class under src
+> right click on src > new > class 
+> enter details :
+    package : com.app.controller
+    Name :    LocationController
+> finish
+(copy below code)
+
+package com.app.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class LocationController {
+
+	@RequestMapping("/regLoc")
+	public String showPage(){
+		return "LocationReg";
+	}
+
+}
+------------------------------
+
+#8 Create LocationReg JSP under views folder
+> right click on views folder > new 
+> JSP File > enter name : LocationReg.jsp
+> finish
+(copy below code)
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Location Register Page</title>
+</head>
+<body>
+<h1>Welcome to Location Register Page!!</h1>
+</body>
+</html>
+
+#9 Run on server:
+> Right click on Project > choose Run As
+> Run on Server >  Enter URL in browser
+ex:
+http://localhost:8080/VendorApp/mvc/regLoc
